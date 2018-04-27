@@ -23,9 +23,13 @@ namespace R_test_1
 
         private void frm1_Load(object sender, EventArgs e)
         {
+            Console.SetOut(new ControlWriter(txtboxResults));
+            MyFunctions.InitializeRDotNet();
+            
             if (String.IsNullOrEmpty(txtboxRCommands.Text))
             {
                 btnClear.Enabled = false;
+                //btnClearResults.Enabled = false;
                 btnSubmit.Enabled = false;
             }
 
@@ -33,11 +37,10 @@ namespace R_test_1
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
-            MyFunctions.InitializeRDotNet();
+            
             try
             {
-
-                // import csv file using native R methods
+                // import csv file using native R methods 
                 //MyFunctions._engine.Evaluate("dataset<-read.csv(file.choose(), header=TRUE, sep = ',', stringsAsFactors = FALSE)");
                 MyFunctions._engine.Evaluate("dataset<-read.csv(file.choose(), sep = ',', stringsAsFactors = FALSE)");
                 //Console.WriteLine("Summary by group: " + results);
@@ -53,10 +56,10 @@ namespace R_test_1
                 //Console.WriteLine("Path of chosen file is: " + libraries.ToString());
 
 
-                //MyFunctions._engine.Evaluate("ggplot(dataset, aes(X,Y)) + geom_point() + geom_smooth()");
-                var graph = MyFunctions._engine.Evaluate("plot(dataset)");
-                //MyFunctions._engine.Evaluate("qplot(X, Y, data=dataset, geom=c('point', 'smooth'))");
-                
+                //var graph = MyFunctions._engine.Evaluate("ggplot(dataset, aes(X0,X36)) + geom_point() + geom_smooth()");
+                //var graph = MyFunctions._engine.Evaluate("plot(dataset)");
+                //var graph = MyFunctions._engine.Evaluate("qplot(X, Y, data=dataset, geom=c('point', 'smooth'))");
+
                 // retrieve the data frame
                 DataFrame df = MyFunctions._engine.Evaluate("dataset").AsDataFrame();
 
@@ -75,21 +78,17 @@ namespace R_test_1
                     for (int k = 0; k < df.ColumnCount; ++k)
                     {
                         dataGridView1[k, i].Value = df[i, k];
-
                     }
-
                 }
-
-
             }
 
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show(@"Sonmething went wrong.");
+                Console.WriteLine("Error loading data: " + ex.Message);
             }
 
             // put R code execute here.
-            
+
         }
 
         private void btnClear_Click(object sender, EventArgs e)
@@ -97,6 +96,10 @@ namespace R_test_1
             txtboxRCommands.Text = "";
         }
 
+        private void btnClearResults_Click(object sender, EventArgs e)
+        {
+            txtboxResults.Text = "";
+        }
         private void txtboxRCommands_TextChanged(object sender, EventArgs e)
         {
             if (String.IsNullOrEmpty(txtboxRCommands.Text))
@@ -111,28 +114,105 @@ namespace R_test_1
             }
         }
 
+        //private void txtboxResults_TextChanged(object sender, EventArgs e)
+        //{
+        //    if (String.IsNullOrEmpty(txtboxResults.Text))
+        //    {
+        //        btnClearResults.Enabled = false;
+        //    }
+        //    else
+        //    {
+        //        btnClearResults.Enabled = true;
+        //    }
+        //}
+
         private void btnSubmit_Click(object sender, EventArgs e)
         {
-            
             try
             {
-                // get contents of datagrid
+                SymbolicExpression expression = MyFunctions._engine.Evaluate(txtboxRCommands.Text.Trim());
+                
+                if (expression == null) return;
 
+                CharacterVector vector = expression.AsCharacter();
 
-                //MyFunctions._engine.Evaluate("\"" + txtboxRCommands.Text + "\"");
-                //Console.WriteLine(MyFunctions._engine.Evaluate("aggregate(. ~GRP, data=dataset, FUN=sum)"));
+                foreach (var sSubmitThis in vector)
+                {
+                    //if (sSubmitThis is string)
+                    {
+                        Console.WriteLine(sSubmitThis);
+                    }
+                }
             }
 
             catch
             {
-                MessageBox.Show(@"Sonmething went wrong.");
+                
             }
+
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show(ex.StackTrace);
+            //}
 
         }
 
         private void frm1_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             //MyFunctions._engine.Dispose();
+        }
+
+        private void btnSession_Click(object sender, EventArgs e)
+        {
+            foreach (string sRSession in MyFunctions._engine.Evaluate("sessionInfo()").AsCharacter())
+            {
+                Console.WriteLine("Current session info: " + sRSession + "\r\n");
+            }
+        }
+
+        private void btnTestCode_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                MyFunctions._engine.Evaluate("library(ggplot2)");
+                MyFunctions._engine.Evaluate("ggplot(dataset, aes(X0,X36)) + geom_point() + geom_smooth()");
+                
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in testing code: " + ex.Message);
+            }
+        }
+
+        private void btnRunPgm_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(txtRunRFile.Text))
+                {
+                    MessageBox.Show("Please enter the file location", "No File!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    string sPath = txtRunRFile.Text.Trim();
+                    sPath = sPath.Replace(@"\", @"\\");
+                    MyFunctions._engine.Evaluate("source('" + sPath + "')");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error executing R code: " + ex.Message);
+            }
+
+        }
+
+        private void btnFileSearch_Click(object sender, EventArgs e)
+        {
+            if (ofdRPath.ShowDialog() == DialogResult.OK)
+            {
+                txtRunRFile.Text = ofdRPath.FileName;
+            }
         }
     }
 
@@ -156,12 +236,6 @@ namespace R_test_1
 
                 _engine.Initialize();
 
-                foreach (string sRSession in MyFunctions._engine.Evaluate("sessionInfo()").AsCharacter())
-                {
-                    Console.WriteLine("Current session info: " + sRSession);
-                }
-
-
                 //foreach (string sPackages in MyFunctions._engine.Evaluate("installed.packages(.Library)").AsCharacter())
                 //{
                 //    Console.WriteLine("Installed packages on local machine are: " + sPackages);
@@ -172,6 +246,33 @@ namespace R_test_1
             {
                 Console.WriteLine("Error Initializing RDotNet: " + ex.Message);
             }
+        }
+    }
+
+    public class ControlWriter : TextWriter
+    {
+        private Control textbox;
+        public ControlWriter(Control textbox)
+        {
+            this.textbox = textbox;
+        }
+
+        public override void Write(char value)
+        {
+            textbox.Text += value;
+        }
+
+        public override void Write(string value)
+        {
+            //if (value != null);
+            {
+                textbox.Text += value;
+            }
+        }
+
+        public override Encoding Encoding
+        {
+            get { return Encoding.UTF8; }
         }
     }
 }
