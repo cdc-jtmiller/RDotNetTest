@@ -9,7 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using RDotNet;
+using RDotNet.NativeLibrary;
 
 //test out git
 
@@ -26,6 +28,7 @@ namespace R_test_1
         private void frm1_Load(object sender, EventArgs e)
         {
             Console.SetOut(new ControlWriter(txtboxResults));
+
             MyFunctions.InitializeRDotNet();
             
             if (String.IsNullOrEmpty(txtboxRCommands.Text))
@@ -219,37 +222,53 @@ namespace R_test_1
     }
 
 
+
     public static class MyFunctions
     {
         public static REngine _engine;
-        internal static void InitializeRDotNet()
+        public static void InitializeRDotNet()
         {
+
             try
             {
+                //  Check for Path and R_Home
+                using (RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\R-core\R"))
+                {
+                    string sPath = Environment.GetEnvironmentVariable("PATH");
+                    string sBinPath = (string)registryKey.GetValue("InstallPath");
+                    string sVersion = (string)registryKey.GetValue("Current Version");
 
-                //string rHome = @"C:\Program Files\R\R-3.4.3";
-                //string rPath = @"C:\Program Files\R\R-3.4.3\bin\x64";
-                ////string rPath = Path.Combine(rHome, @"bin\x64");
-                //REngine.SetEnvironmentVariables(rPath, rHome);
-                //_engine = REngine.GetInstance();
+                    // Check to see which instance of R is running
+                    sBinPath = System.Environment.Is64BitProcess ? sBinPath + @"\bin\x64\" : sBinPath + @"\bin\i386\";
+                    Environment.SetEnvironmentVariable("Path", sPath + Path.PathSeparator + sBinPath);
+                    Console.WriteLine("Env Path: " + sPath + "\r\n" + "R Bin Path: " + sBinPath + "\r\n" + "R Version: " + sVersion);
+                    string sPath2 = Environment.GetEnvironmentVariable("PATH");
+                    var logInfo = RDotNet.NativeLibrary.NativeUtility.GetRHomeEnvironmentVariable();
+                    var rLib = RDotNet.NativeLibrary.NativeUtility.GetRLibraryFileName();
 
-                REngine.SetEnvironmentVariables();
-                _engine = REngine.GetInstance();
 
-                _engine.Initialize();
+                    REngine.SetEnvironmentVariables();
+                    _engine = REngine.GetInstance();
+                    _engine.Initialize();
 
-                //foreach (string sPackages in MyFunctions._engine.Evaluate("installed.packages(.Library)").AsCharacter())
-                //{
-                //    Console.WriteLine("Installed packages on local machine are: " + sPackages);
-                //}
 
+
+                    Console.WriteLine("R Home: " + logInfo + "\r\n");
+                    Console.WriteLine("R Library: " + rLib + "\r\n");
+                    //foreach (string sPackages in MyFunctions._engine.Evaluate("installed.packages(.Library)").AsCharacter())
+                    //    Console.WriteLine("Installed packages on local machine are: " + sPackages);
+
+                }
             }
+
             catch (Exception ex)
             {
                 Console.WriteLine("Error Initializing RDotNet: " + ex.Message);
             }
         }
     }
+
+    
 
     public class ControlWriter : TextWriter
     {
