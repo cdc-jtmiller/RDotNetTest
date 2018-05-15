@@ -234,17 +234,19 @@ namespace R_test_1
                 //  Check for Path and R_Home
                 using (RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\R-core\R"))
                 {
-                    string sPath = Environment.GetEnvironmentVariable("PATH");
+                    string sOrigPath = Environment.GetEnvironmentVariable("PATH");
                     string sBinPath = (string)registryKey.GetValue("InstallPath");
                     string sVersion = (string)registryKey.GetValue("Current Version");
 
                     // Check to see which instance of R is running
                     sBinPath = System.Environment.Is64BitProcess ? sBinPath + @"\bin\x64\" : sBinPath + @"\bin\i386\";
-                    Environment.SetEnvironmentVariable("Path", sPath + Path.PathSeparator + sBinPath);
-                    Console.WriteLine("Env Path: " + sPath + "\r\n" + "R Bin Path: " + sBinPath + "\r\n" + "R Version: " + sVersion);
-                    string sPath2 = Environment.GetEnvironmentVariable("PATH");
-                    var logInfo = RDotNet.NativeLibrary.NativeUtility.GetRHomeEnvironmentVariable();
-                    var rLib = RDotNet.NativeLibrary.NativeUtility.GetRLibraryFileName();
+                    Environment.SetEnvironmentVariable("Path", sOrigPath + sBinPath);
+                    //Console.WriteLine("Env Path: " + sOrigPath + "\r\n" + "R Bin Path: " + sBinPath + "\r\n" + "R Version: " + sVersion);
+                    string sNewPath = Environment.GetEnvironmentVariable("Path");
+                    //var logInfo = RDotNet.NativeLibrary.NativeUtility.GetRHomeEnvironmentVariable();
+                    //var rLib = RDotNet.NativeLibrary.NativeUtility.GetRLibraryFileName();
+                    Console.WriteLine("Original Env Path: " + sOrigPath);
+                    Console.WriteLine("     New Env Path: " + sNewPath);
 
 
                     REngine.SetEnvironmentVariables();
@@ -253,8 +255,8 @@ namespace R_test_1
 
 
 
-                    Console.WriteLine("R Home: " + logInfo + "\r\n");
-                    Console.WriteLine("R Library: " + rLib + "\r\n");
+                    //Console.WriteLine("R Home: " + logInfo + "\r\n");
+                    //Console.WriteLine("R Library: " + rLib + "\r\n");
                     //foreach (string sPackages in MyFunctions._engine.Evaluate("installed.packages(.Library)").AsCharacter())
                     //    Console.WriteLine("Installed packages on local machine are: " + sPackages);
 
