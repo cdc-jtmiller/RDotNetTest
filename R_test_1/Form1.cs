@@ -228,33 +228,43 @@ namespace R_test_1
         public static REngine _engine;
         public static void InitializeRDotNet()
         {
-
             try
             {
                 //  Check for Path and R_Home
                 using (RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\R-core\R"))
                 {
-                    string sOrigPath = Environment.GetEnvironmentVariable("PATH");
-                    string sBinPath = (string)registryKey.GetValue("InstallPath");
-                    string sVersion = (string)registryKey.GetValue("Current Version");
+                    string sEnvPath = Environment.GetEnvironmentVariable("Path");
+                    string sRInstallPath = (string)registryKey.GetValue("InstallPath");
+                    string sRInstallVersion = (string)registryKey.GetValue("Current Version");
 
-                    // Check to see which instance of R is running
-                    sBinPath = System.Environment.Is64BitProcess ? sBinPath + @"\bin\x64\" : sBinPath + @"\bin\i386\";
-                    Environment.SetEnvironmentVariable("Path", sOrigPath + sBinPath);
-                    //Console.WriteLine("Env Path: " + sOrigPath + "\r\n" + "R Bin Path: " + sBinPath + "\r\n" + "R Version: " + sVersion);
-                    string sNewPath = Environment.GetEnvironmentVariable("Path");
-                    //var logInfo = RDotNet.NativeLibrary.NativeUtility.GetRHomeEnvironmentVariable();
-                    //var rLib = RDotNet.NativeLibrary.NativeUtility.GetRLibraryFileName();
-                    Console.WriteLine("Original Env Path: " + sOrigPath);
-                    Console.WriteLine("     New Env Path: " + sNewPath);
-
-
-                    REngine.SetEnvironmentVariables();
-                    _engine = REngine.GetInstance();
-                    _engine.Initialize();
+                    // Check to see which instance of R is installed
+                    if (!string.IsNullOrEmpty(sRInstallPath))
+                    {
+                        string sRBinPath = System.Environment.Is64BitProcess ? sRInstallPath + @"bin\x64\" : sRInstallPath + @"bin\i386\";
+                        Environment.SetEnvironmentVariable("Path", sEnvPath + sRInstallPath);
+                        //Console.WriteLine("Env Path: " + sOrigPath + "\r\n" + "R Bin Path: " + sBinPath + "\r\n" + "R Version: " + sVersion);
+                        string sNewPath = Environment.GetEnvironmentVariable("Path");
+                        //var logInfo = RDotNet.NativeLibrary.NativeUtility.GetRHomeEnvironmentVariable();
+                        //var rLib = RDotNet.NativeLibrary.NativeUtility.GetRLibraryFileName();
+                        Console.WriteLine("Original Env Path: " + sEnvPath);
+                        Console.WriteLine("     New Env Path: " + sNewPath);
 
 
-
+                        REngine.SetEnvironmentVariables(sRBinPath,sRInstallPath);  // Leave these out for system default.
+                        _engine = REngine.GetInstance();
+                        _engine.Initialize();
+                    }
+                    else
+                    {
+                        MessageBox.Show("You do not have the R software installed.  Please install version 3.43.",
+                        "Critical Warning",
+                        MessageBoxButtons.OKCancel, 
+                        MessageBoxIcon.Warning, 
+                        MessageBoxDefaultButton.Button1,
+                        MessageBoxOptions.RightAlign,
+                        true);
+                        
+                    }
                     //Console.WriteLine("R Home: " + logInfo + "\r\n");
                     //Console.WriteLine("R Library: " + rLib + "\r\n");
                     //foreach (string sPackages in MyFunctions._engine.Evaluate("installed.packages(.Library)").AsCharacter())
