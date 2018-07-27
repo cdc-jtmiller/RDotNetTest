@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Diagnostics;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -219,13 +220,35 @@ namespace R_test_1
                 txtRunRFile.Text = ofdRPath.FileName;
             }
         }
+
+        private void btnExamples_Click(object sender, EventArgs e)
+        {
+            // Create a list of example code
+            ArrayList list = new ArrayList();
+            list.Add("names(dataset)");
+            list.Add("head(dataset, n=5)");
+            list.Add("mean(dataset$X0)");
+            list.Add("summary(dataset)");
+            list.Add(".libPaths()");
+            list.Add("install.packages(\"Hmisc\") \r\nlibrary(Hmisc) \r\ndescribe(dataset)");
+
+            // Take one element from the list randomly and put it in the commands box
+            int r = MyFunctions.rnd.Next(list.Count);
+
+            txtboxRCommands.Clear();
+            txtboxResults.Clear();
+            txtboxRCommands.Text = list[r].ToString();
+        }
     }
 
 
 
     public static class MyFunctions
     {
+        public static Random rnd = new Random();
+
         public static REngine _engine;
+
         public static void InitializeRDotNet()
         {
             try
@@ -237,7 +260,7 @@ namespace R_test_1
                     string sRInstallPath = (string)registryKey.GetValue("InstallPath");
                     string sRInstallVersion = (string)registryKey.GetValue("Current Version");
 
-<<<<<<< HEAD
+
                 //string rHome = @"C:\Program Files\R\R-3.4.3";
                 //string rPath = @"C:\Program Files\R\R-3.4.3\bin\x64";
                 ////string rPath = Path.Combine(rHome, @"bin\x64");
@@ -259,7 +282,7 @@ namespace R_test_1
                 //{
                 //    Console.WriteLine("Installed packages on local machine are: " + sPackages);
                 //}
-=======
+
                     // Check to see which instance of R is installed
                     if (!string.IsNullOrEmpty(sRInstallPath))
                     {
@@ -292,7 +315,7 @@ namespace R_test_1
                     //Console.WriteLine("R Library: " + rLib + "\r\n");
                     //foreach (string sPackages in MyFunctions._engine.Evaluate("installed.packages(.Library)").AsCharacter())
                     //    Console.WriteLine("Installed packages on local machine are: " + sPackages);
->>>>>>> f22a402a29a772ca0d2b46153520bfc893f3f7a6
+
 
                 }
             }

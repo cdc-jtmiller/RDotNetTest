@@ -44,6 +44,7 @@
             this.btnRunPgm = new System.Windows.Forms.Button();
             this.btnFileSearch = new System.Windows.Forms.Button();
             this.ofdRPath = new System.Windows.Forms.OpenFileDialog();
+            this.btnExamples = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -191,11 +192,22 @@
             this.ofdRPath.FileName = "rfile";
             this.ofdRPath.InitialDirectory = "C:\\";
             // 
+            // btnExamples
+            // 
+            this.btnExamples.Location = new System.Drawing.Point(150, 236);
+            this.btnExamples.Name = "btnExamples";
+            this.btnExamples.Size = new System.Drawing.Size(112, 23);
+            this.btnExamples.TabIndex = 17;
+            this.btnExamples.Text = "Click for examples";
+            this.btnExamples.UseVisualStyleBackColor = true;
+            this.btnExamples.Click += new System.EventHandler(this.btnExamples_Click);
+            // 
             // frm1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(774, 448);
+            this.Controls.Add(this.btnExamples);
             this.Controls.Add(this.btnFileSearch);
             this.Controls.Add(this.btnRunPgm);
             this.Controls.Add(this.txtRunRFile);
@@ -237,6 +249,7 @@
         private System.Windows.Forms.Button btnRunPgm;
         private System.Windows.Forms.Button btnFileSearch;
         private System.Windows.Forms.OpenFileDialog ofdRPath;
+        private System.Windows.Forms.Button btnExamples;
     }
 }
 
