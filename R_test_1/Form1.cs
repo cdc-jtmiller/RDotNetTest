@@ -233,10 +233,16 @@ namespace R_test_1
                 //REngine.SetEnvironmentVariables(rPath, rHome);
                 //_engine = REngine.GetInstance();
 
+                var logInfo = RDotNet.NativeLibrary.NativeUtility.GetRHomeEnvironmentVariable();
+                var logInfo2 = RDotNet.NativeLibrary.NativeUtility.GetPlatform();
+                var rLib = RDotNet.NativeLibrary.NativeUtility.GetRLibraryFileName();
+
+
                 REngine.SetEnvironmentVariables();
                 _engine = REngine.GetInstance();
-
                 _engine.Initialize();
+
+                //Console.WriteLine("R_values: " + _engine.P);
 
                 //foreach (string sPackages in MyFunctions._engine.Evaluate("installed.packages(.Library)").AsCharacter())
                 //{
