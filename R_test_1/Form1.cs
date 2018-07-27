@@ -9,7 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using RDotNet;
+using RDotNet.NativeLibrary;
 
 //test out git
 
@@ -26,6 +28,7 @@ namespace R_test_1
         private void frm1_Load(object sender, EventArgs e)
         {
             Console.SetOut(new ControlWriter(txtboxResults));
+
             MyFunctions.InitializeRDotNet();
             
             if (String.IsNullOrEmpty(txtboxRCommands.Text))
@@ -219,14 +222,22 @@ namespace R_test_1
     }
 
 
+
     public static class MyFunctions
     {
         public static REngine _engine;
-        internal static void InitializeRDotNet()
+        public static void InitializeRDotNet()
         {
             try
             {
+                //  Check for Path and R_Home
+                using (RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\R-core\R"))
+                {
+                    string sEnvPath = Environment.GetEnvironmentVariable("Path");
+                    string sRInstallPath = (string)registryKey.GetValue("InstallPath");
+                    string sRInstallVersion = (string)registryKey.GetValue("Current Version");
 
+<<<<<<< HEAD
                 //string rHome = @"C:\Program Files\R\R-3.4.3";
                 //string rPath = @"C:\Program Files\R\R-3.4.3\bin\x64";
                 ////string rPath = Path.Combine(rHome, @"bin\x64");
@@ -248,14 +259,52 @@ namespace R_test_1
                 //{
                 //    Console.WriteLine("Installed packages on local machine are: " + sPackages);
                 //}
+=======
+                    // Check to see which instance of R is installed
+                    if (!string.IsNullOrEmpty(sRInstallPath))
+                    {
+                        string sRBinPath = System.Environment.Is64BitProcess ? sRInstallPath + @"bin\x64\" : sRInstallPath + @"bin\i386\";
+                        Environment.SetEnvironmentVariable("Path", sEnvPath + sRInstallPath);
+                        //Console.WriteLine("Env Path: " + sOrigPath + "\r\n" + "R Bin Path: " + sBinPath + "\r\n" + "R Version: " + sVersion);
+                        string sNewPath = Environment.GetEnvironmentVariable("Path");
+                        //var logInfo = RDotNet.NativeLibrary.NativeUtility.GetRHomeEnvironmentVariable();
+                        //var rLib = RDotNet.NativeLibrary.NativeUtility.GetRLibraryFileName();
+                        Console.WriteLine("Original Env Path: " + sEnvPath);
+                        Console.WriteLine("     New Env Path: " + sNewPath);
 
+
+                        REngine.SetEnvironmentVariables(sRBinPath,sRInstallPath);  // Leave these out for system default.
+                        _engine = REngine.GetInstance();
+                        _engine.Initialize();
+                    }
+                    else
+                    {
+                        MessageBox.Show("You do not have the R software installed.  Please install version 3.43.",
+                        "Critical Warning",
+                        MessageBoxButtons.OKCancel, 
+                        MessageBoxIcon.Warning, 
+                        MessageBoxDefaultButton.Button1,
+                        MessageBoxOptions.RightAlign,
+                        true);
+                        
+                    }
+                    //Console.WriteLine("R Home: " + logInfo + "\r\n");
+                    //Console.WriteLine("R Library: " + rLib + "\r\n");
+                    //foreach (string sPackages in MyFunctions._engine.Evaluate("installed.packages(.Library)").AsCharacter())
+                    //    Console.WriteLine("Installed packages on local machine are: " + sPackages);
+>>>>>>> f22a402a29a772ca0d2b46153520bfc893f3f7a6
+
+                }
             }
+
             catch (Exception ex)
             {
                 Console.WriteLine("Error Initializing RDotNet: " + ex.Message);
             }
         }
     }
+
+    
 
     public class ControlWriter : TextWriter
     {
