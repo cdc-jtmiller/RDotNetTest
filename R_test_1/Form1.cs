@@ -137,7 +137,6 @@ namespace R_test_1
             try
             {
                 SymbolicExpression expression = MyFunctions._engine.Evaluate(txtboxRCommands.Text.Trim());
-                
                 if (expression == null) return;
 
                 CharacterVector vector = expression.AsCharacter();
@@ -231,6 +230,7 @@ namespace R_test_1
             list.Add("summary(dataset)");
             list.Add(".libPaths()");
             list.Add("install.packages(\"Hmisc\") \r\nlibrary(Hmisc) \r\ndescribe(dataset)");
+            list.Add("hist(dataset, xlab=' X Axis', main=''");
 
             // Take one element from the list randomly and put it in the commands box
             int r = MyFunctions.rnd.Next(list.Count);
